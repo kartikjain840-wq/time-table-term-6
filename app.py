@@ -1,12 +1,22 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
+from io import StringIO
 
-# ---- LOAD DATA ----
-# If you want to use another file, change the path or add a file uploader.
-FILE_PATH = "/mnt/data/Term6_Full_Class_Schedule_CORRECTED.csv"
-df = pd.read_csv(FILE_PATH)
+st.set_page_config(page_title="Timetable", layout="wide")
+st.title("Timetable Dashboard")
 
-# Normalize column names (edit if yours differ)
+# =========================
+# EMBEDDED TIMETABLE DATA
+# =========================
+DATA = """
+date,day,subject,start time,end time,location
+2026-01-05,Monday,Math,09:00,10:00,Room 101
+2026-01-05,Monday,Physics,10:00,11:00,Room 202
+2026-01-06,Tuesday,Chemistry,09:00,10:00,Lab 1
+2026-01-06,Tuesday,Biology,11:00,12:00,Room 220
+"""
+
+df = pd.read_csv(StringIO(DATA))
 df.columns = [c.strip().lower() for c in df.columns]
 
 required_cols = ["date", "day", "subject", "start time", "end time", "location"]
@@ -15,19 +25,12 @@ if missing:
     st.error(f"Missing required columns: {', '.join(missing)}")
     st.stop()
 
-st.set_page_config(page_title="Timetable", layout="wide")
-
-# ---- HEADER ----
-st.title("Timetable Dashboard")
-
-# ---- SUBJECT FILTER ----
 subjects = sorted(df["subject"].dropna().unique())
 selected = st.multiselect("Select subjects", subjects)
 
 filtered = df[df["subject"].isin(selected)] if selected else df.copy()
 filtered = filtered.sort_values(["date", "start time"])
 
-# ---- STYLING ----
 def style_table(d):
     return (
         d.style
@@ -40,10 +43,12 @@ def style_table(d):
         })
         .set_table_styles([
             {"selector": "thead th",
-             "props": [("background-color", "#f3f4f6"),
-                       ("font-weight", "600"),
-                       ("text-align", "left"),
-                       ("border-bottom", "2px solid #d1d5db")]}
+             "props": [
+                 ("background-color", "#f3f4f6"),
+                 ("font-weight", "600"),
+                 ("text-align", "left"),
+                 ("border-bottom", "2px solid #d1d5db")
+             ]}
         ])
         .hide_index()
     )
@@ -51,7 +56,6 @@ def style_table(d):
 st.subheader("Schedule")
 st.write(style_table(filtered), unsafe_allow_html=True)
 
-# ---- DOWNLOAD ----
 csv_bytes = filtered.to_csv(index=False).encode("utf-8")
 st.download_button(
     "Download timetable (CSV)",
@@ -60,4 +64,4 @@ st.download_button(
     "text/csv",
 )
 
-st.caption("Select subjects to filter. Download when ready.")
+st.caption("Pick subjects. View timetable. Download when ready.")
