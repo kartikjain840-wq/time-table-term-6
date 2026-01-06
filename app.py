@@ -5,9 +5,6 @@ from io import StringIO
 st.set_page_config(page_title="Timetable", layout="wide")
 st.title("Timetable Dashboard")
 
-# =========================
-# EMBEDDED TIMETABLE DATA
-# =========================
 DATA = """
 date,day,subject,start time,end time,location
 2026-01-05,Monday,Math,09:00,10:00,Room 101
@@ -18,12 +15,6 @@ date,day,subject,start time,end time,location
 
 df = pd.read_csv(StringIO(DATA))
 df.columns = [c.strip().lower() for c in df.columns]
-
-required_cols = ["date", "day", "subject", "start time", "end time", "location"]
-missing = [c for c in required_cols if c not in df.columns]
-if missing:
-    st.error(f"Missing required columns: {', '.join(missing)}")
-    st.stop()
 
 subjects = sorted(df["subject"].dropna().unique())
 selected = st.multiselect("Select subjects", subjects)
@@ -64,4 +55,4 @@ st.download_button(
     "text/csv",
 )
 
-st.caption("Pick subjects. View timetable. Download when ready.")
+st.caption("Pick subjects. View timetable. Download.")
